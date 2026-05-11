@@ -17,8 +17,8 @@ use std::pin::Pin;
 
 use async_stream::stream;
 use async_trait::async_trait;
-use claurst_core::provider_id::{ModelId, ProviderId};
-use claurst_core::types::{ContentBlock, MessageContent, Role, ToolResultContent, UsageInfo};
+use asimov_core::provider_id::{ModelId, ProviderId};
+use asimov_core::types::{ContentBlock, MessageContent, Role, ToolResultContent, UsageInfo};
 use futures::Stream;
 use serde_json::{json, Value};
 use tracing::debug;

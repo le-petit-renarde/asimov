@@ -33,12 +33,12 @@ impl ImportPaths {
     pub fn detect() -> Self {
         let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
         let claude_dir = home.join(".claude");
-        let claurst_dir = Settings::config_dir();
+        let asimov_dir = Settings::config_dir();
         Self {
             source_claude_md: claude_dir.join("CLAUDE.md"),
             source_settings_json: claude_dir.join("settings.json"),
-            target_claude_md: claurst_dir.join("CLAUDE.md"),
-            target_settings_json: claurst_dir.join("settings.json"),
+            target_claude_md: asimov_dir.join("CLAUDE.md"),
+            target_settings_json: asimov_dir.join("settings.json"),
         }
     }
 }
@@ -860,9 +860,9 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let home = tmp.path();
         let claude_dir = home.join(".claude");
-        let claurst_dir = home.join(".claurst");
+        let asimov_dir = home.join(".asimov");
         std::fs::create_dir_all(&claude_dir).unwrap();
-        std::fs::create_dir_all(&claurst_dir).unwrap();
+        std::fs::create_dir_all(&asimov_dir).unwrap();
         std::fs::write(claude_dir.join("CLAUDE.md"), "hello\nworld").unwrap();
         std::fs::write(
             claude_dir.join("settings.json"),

@@ -1,12 +1,12 @@
 [package]
-name = "claurst-tools"
+name = "asimov-tools"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
-claurst-core = { workspace = true }
-claurst-api = { workspace = true }
-claurst-mcp = { workspace = true }
+asimov-core = { workspace = true }
+asimov-api = { workspace = true }
+asimov-mcp = { workspace = true }
 tokio = { workspace = true }
 tokio-stream = { workspace = true }
 tokio-util = { workspace = true }

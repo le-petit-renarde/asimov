@@ -19,7 +19,7 @@ struct GitResult {
 
 /// A shadow git repository that stores worktree state as git tree objects
 /// (no commits, no branches).  Stored outside the user's repo at
-/// `~/.claurst/data/snapshot/<project_hash>/<worktree_hash>/`.
+/// `~/.asimov/data/snapshot/<project_hash>/<worktree_hash>/`.
 pub struct ShadowSnapshot {
     /// Path to the shadow bare gitdir.
     gitdir: PathBuf,
@@ -38,7 +38,7 @@ impl ShadowSnapshot {
             return None;
         }
         let repo_root = find_repo_root(working_dir)?;
-        let data_dir = dirs::data_dir()?.join("claurst").join("snapshot");
+        let data_dir = dirs::data_dir()?.join("asimov").join("snapshot");
         let project_hash = path_hash(&repo_root);
         let worktree_hash = path_hash(working_dir);
         let gitdir = data_dir.join(project_hash).join(worktree_hash);

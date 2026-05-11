@@ -122,7 +122,7 @@ pub fn render_invalid_config_dialog(
 
     // Subtitle
     let subtitle = match state.kind {
-        InvalidConfigKind::Settings => "~/.claurst/settings.json could not be parsed.",
+        InvalidConfigKind::Settings => "~/.asimov/settings.json could not be parsed.",
         InvalidConfigKind::ClaudeMd => "AGENTS.md could not be parsed.",
         InvalidConfigKind::Generic => "A configuration file could not be parsed.",
     };
@@ -152,18 +152,18 @@ pub fn render_invalid_config_dialog(
     )]));
     let instructions = match state.kind {
         InvalidConfigKind::Settings => vec![
-            "  1. Open ~/.claurst/settings.json in a text editor.",
+            "  1. Open ~/.asimov/settings.json in a text editor.",
             "  2. Fix the JSON syntax error shown above.",
-            "  3. Restart Claurst.",
+            "  3. Restart Asimov.",
         ],
         InvalidConfigKind::ClaudeMd => vec![
             "  1. Open the AGENTS.md file shown above in a text editor.",
             "  2. Fix the syntax error.",
-            "  3. Restart Claurst.",
+            "  3. Restart Asimov.",
         ],
         InvalidConfigKind::Generic => vec![
             "  1. Fix the configuration file shown above.",
-            "  2. Restart Claurst.",
+            "  2. Restart Asimov.",
         ],
     };
     for instr in instructions {

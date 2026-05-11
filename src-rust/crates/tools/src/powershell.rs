@@ -15,7 +15,7 @@
 
 use crate::{PermissionLevel, Tool, ToolContext, ToolResult};
 use async_trait::async_trait;
-use claurst_core::ps_classifier::{PsRiskLevel, classify_ps_command};
+use asimov_core::ps_classifier::{PsRiskLevel, classify_ps_command};
 use serde::Deserialize;
 use serde_json::{json, Value};
 use std::process::Stdio;
@@ -154,8 +154,8 @@ impl Tool for PowerShellTool {
                 let needs_gate = params.require_confirmation
                     || matches!(
                         ctx.permission_mode,
-                        claurst_core::config::PermissionMode::Default
-                            | claurst_core::config::PermissionMode::Plan
+                        asimov_core::config::PermissionMode::Default
+                            | asimov_core::config::PermissionMode::Plan
                     );
 
                 if needs_gate {

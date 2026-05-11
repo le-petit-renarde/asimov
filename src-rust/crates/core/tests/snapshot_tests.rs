@@ -12,7 +12,7 @@
 use std::path::{Path, PathBuf};
 use std::fs;
 use tempfile::TempDir;
-use claurst_core::snapshot::{ShadowSnapshot, Patch};
+use asimov_core::snapshot::{ShadowSnapshot, Patch};
 
 // ---------------------------------------------------------------------------
 // Test helpers
@@ -370,13 +370,13 @@ async fn diff_full_sets_status() {
     assert_eq!(diffs.len(), 4);
 
     let added = diffs.iter().find(|d| d.file == "added.txt").expect("added");
-    assert_eq!(added.status, Some(claurst_core::snapshot::FileStatus::Added));
+    assert_eq!(added.status, Some(asimov_core::snapshot::FileStatus::Added));
 
     let deleted = diffs.iter().find(|d| d.file == "delete.txt").expect("deleted");
-    assert_eq!(deleted.status, Some(claurst_core::snapshot::FileStatus::Deleted));
+    assert_eq!(deleted.status, Some(asimov_core::snapshot::FileStatus::Deleted));
 
     let grow = diffs.iter().find(|d| d.file == "grow.txt").expect("grow");
-    assert_eq!(grow.status, Some(claurst_core::snapshot::FileStatus::Modified));
+    assert_eq!(grow.status, Some(asimov_core::snapshot::FileStatus::Modified));
     assert!(grow.additions > 0);
     assert_eq!(grow.deletions, 0);
 }

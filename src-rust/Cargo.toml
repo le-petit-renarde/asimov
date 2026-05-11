@@ -13,12 +13,13 @@ members = [
     "crates/buddy",
     "crates/plugins",
     "crates/acp",
+    "crates/search",
 ]
 
 [workspace.package]
-version = "0.0.9"
+version = "0.1.0"
 edition = "2021"
-authors = ["Claurst"]
+authors = ["Asimov"]
 license = "GPL-3.0"
 
 [workspace.dependencies]
@@ -100,14 +101,15 @@ tokio-tungstenite = { version = "0.24", features = ["native-tls"] }
 schemars = { version = "0.8", features = ["derive"] }
 
 # Workspace crates
-claurst-core = { path = "crates/core" }
-claurst-acp = { path = "crates/acp" }
-claurst-api = { path = "crates/api" }
-claurst-tools = { path = "crates/tools" }
-claurst-query = { path = "crates/query" }
-claurst-tui = { path = "crates/tui" }
-claurst-commands = { path = "crates/commands" }
-claurst-mcp = { path = "crates/mcp" }
-claurst-bridge = { path = "crates/bridge" }
-claurst-buddy = { path = "crates/buddy" }
-claurst-plugins = { path = "crates/plugins" }
+asimov-core = { path = "crates/core" }
+asimov-acp = { path = "crates/acp" }
+asimov-api = { path = "crates/api" }
+asimov-tools = { path = "crates/tools" }
+asimov-query = { path = "crates/query" }
+asimov-tui = { path = "crates/tui" }
+asimov-commands = { path = "crates/commands" }
+asimov-mcp = { path = "crates/mcp" }
+asimov-bridge = { path = "crates/bridge" }
+asimov-buddy = { path = "crates/buddy" }
+asimov-plugins = { path = "crates/plugins" }
+asimov-search = { path = "crates/search" }

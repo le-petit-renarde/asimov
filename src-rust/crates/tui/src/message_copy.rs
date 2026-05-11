@@ -7,20 +7,20 @@
 //! - JSON: Serialized message data
 //! - Selection only: Selected text only
 
-use claurst_core::Message;
+use asimov_core::Message;
 use serde_json::json;
 use std::io::Write;
 
 /// Copy message as markdown (preserving formatting)
 pub fn copy_as_markdown(message: &Message) -> String {
     let content = match &message.content {
-        claurst_core::MessageContent::Text(text) => text.clone(),
-        claurst_core::MessageContent::Blocks(blocks) => {
+        asimov_core::MessageContent::Text(text) => text.clone(),
+        asimov_core::MessageContent::Blocks(blocks) => {
             blocks
                 .iter()
                 .filter_map(|block| match block {
-                    claurst_core::ContentBlock::Text { text } => Some(text.clone()),
-                    claurst_core::ContentBlock::Thinking {
+                    asimov_core::ContentBlock::Text { text } => Some(text.clone()),
+                    asimov_core::ContentBlock::Thinking {
                         thinking,
                         signature,
                     } => {
@@ -30,7 +30,7 @@ pub fn copy_as_markdown(message: &Message) -> String {
                             signature, thinking
                         ))
                     }
-                    claurst_core::ContentBlock::ToolUse { id, name, input } => {
+                    asimov_core::ContentBlock::ToolUse { id, name, input } => {
                         // Format tool use as code block
                         Some(format!(
                             "```json\n// Tool: {}\n// ID: {}\n{}\n```",
@@ -39,7 +39,7 @@ pub fn copy_as_markdown(message: &Message) -> String {
                             serde_json::to_string_pretty(input).unwrap_or_default()
                         ))
                     }
-                    claurst_core::ContentBlock::ToolResult {
+                    asimov_core::ContentBlock::ToolResult {
                         tool_use_id: _,
                         content,
                         is_error,
@@ -50,12 +50,12 @@ pub fn copy_as_markdown(message: &Message) -> String {
                             ""
                         };
                         let result_text = match content {
-                            claurst_core::ToolResultContent::Text(text) => text.clone(),
-                            claurst_core::ToolResultContent::Blocks(blocks) => {
+                            asimov_core::ToolResultContent::Text(text) => text.clone(),
+                            asimov_core::ToolResultContent::Blocks(blocks) => {
                                 blocks
                                     .iter()
                                     .filter_map(|b| match b {
-                                        claurst_core::ContentBlock::Text { text } => Some(text.clone()),
+                                        asimov_core::ContentBlock::Text { text } => Some(text.clone()),
                                         _ => None,
                                     })
                                     .collect::<Vec<_>>()
@@ -80,35 +80,35 @@ pub fn copy_as_markdown(message: &Message) -> String {
 /// Copy message as plaintext (no markdown formatting)
 pub fn copy_as_plaintext(message: &Message) -> String {
     let content = match &message.content {
-        claurst_core::MessageContent::Text(text) => strip_markdown(text),
-        claurst_core::MessageContent::Blocks(blocks) => {
+        asimov_core::MessageContent::Text(text) => strip_markdown(text),
+        asimov_core::MessageContent::Blocks(blocks) => {
             blocks
                 .iter()
                 .filter_map(|block| match block {
-                    claurst_core::ContentBlock::Text { text } => Some(strip_markdown(text)),
-                    claurst_core::ContentBlock::Thinking { thinking, .. } => {
+                    asimov_core::ContentBlock::Text { text } => Some(strip_markdown(text)),
+                    asimov_core::ContentBlock::Thinking { thinking, .. } => {
                         Some(format!("[Thinking]\n{}", thinking))
                     }
-                    claurst_core::ContentBlock::ToolUse { name, input, .. } => {
+                    asimov_core::ContentBlock::ToolUse { name, input, .. } => {
                         Some(format!(
                             "[Tool: {}]\n{}",
                             name,
                             serde_json::to_string_pretty(input).unwrap_or_default()
                         ))
                     }
-                    claurst_core::ContentBlock::ToolResult { content, is_error, .. } => {
+                    asimov_core::ContentBlock::ToolResult { content, is_error, .. } => {
                         let error_marker = if is_error.unwrap_or(false) {
                             "[ERROR] "
                         } else {
                             ""
                         };
                         let result_text = match content {
-                            claurst_core::ToolResultContent::Text(text) => text.clone(),
-                            claurst_core::ToolResultContent::Blocks(blocks) => {
+                            asimov_core::ToolResultContent::Text(text) => text.clone(),
+                            asimov_core::ToolResultContent::Blocks(blocks) => {
                                 blocks
                                     .iter()
                                     .filter_map(|b| match b {
-                                        claurst_core::ContentBlock::Text { text } => Some(text.clone()),
+                                        asimov_core::ContentBlock::Text { text } => Some(text.clone()),
                                         _ => None,
                                     })
                                     .collect::<Vec<_>>()
@@ -125,8 +125,8 @@ pub fn copy_as_plaintext(message: &Message) -> String {
     };
 
     let role_str = match message.role {
-        claurst_core::Role::User => "User",
-        claurst_core::Role::Assistant => "Assistant",
+        asimov_core::Role::User => "User",
+        asimov_core::Role::Assistant => "Assistant",
     };
     format!("{}:\n\n{}", role_str, content)
 }
@@ -136,12 +136,12 @@ pub fn copy_code_blocks(message: &Message) -> String {
     let mut code_blocks = Vec::new();
 
     match &message.content {
-        claurst_core::MessageContent::Text(text) => {
+        asimov_core::MessageContent::Text(text) => {
             extract_code_blocks_from_text(text, &mut code_blocks);
         }
-        claurst_core::MessageContent::Blocks(blocks) => {
+        asimov_core::MessageContent::Blocks(blocks) => {
             for block in blocks {
-                if let claurst_core::ContentBlock::Text { text } = block {
+                if let asimov_core::ContentBlock::Text { text } = block {
                     extract_code_blocks_from_text(text, &mut code_blocks);
                 }
             }
@@ -158,15 +158,15 @@ pub fn copy_code_blocks(message: &Message) -> String {
 /// Copy message as JSON
 pub fn copy_as_json(message: &Message) -> String {
     let role_str = match message.role {
-        claurst_core::Role::User => "user",
-        claurst_core::Role::Assistant => "assistant",
+        asimov_core::Role::User => "user",
+        asimov_core::Role::Assistant => "assistant",
     };
 
     let json_value = json!({
         "role": role_str,
         "content": match &message.content {
-            claurst_core::MessageContent::Text(text) => text.clone(),
-            claurst_core::MessageContent::Blocks(blocks) => {
+            asimov_core::MessageContent::Text(text) => text.clone(),
+            asimov_core::MessageContent::Blocks(blocks) => {
                 blocks.iter().map(|b| format_block_for_json(b)).collect::<Vec<_>>().join("\n")
             }
         },
@@ -193,10 +193,10 @@ pub fn copy_selection(selected_text: &str) -> String {
 // ============================================================================
 
 /// Format a message with role prefix as markdown
-fn format_markdown_message(role: &claurst_core::Role, content: &str) -> String {
+fn format_markdown_message(role: &asimov_core::Role, content: &str) -> String {
     let role_str = match role {
-        claurst_core::Role::User => "**User**",
-        claurst_core::Role::Assistant => "**Assistant**",
+        asimov_core::Role::User => "**User**",
+        asimov_core::Role::Assistant => "**Assistant**",
     };
     format!("{}\n\n{}", role_str, content)
 }
@@ -326,11 +326,11 @@ fn extract_code_blocks_from_text(text: &str, blocks: &mut Vec<String>) {
 }
 
 /// Format a content block as JSON-compatible string
-fn format_block_for_json(block: &claurst_core::ContentBlock) -> String {
+fn format_block_for_json(block: &asimov_core::ContentBlock) -> String {
     match block {
-        claurst_core::ContentBlock::Text { text } => text.clone(),
-        claurst_core::ContentBlock::Image { .. } => "[Image content]".to_string(),
-        claurst_core::ContentBlock::ToolUse { id, name, input } => {
+        asimov_core::ContentBlock::Text { text } => text.clone(),
+        asimov_core::ContentBlock::Image { .. } => "[Image content]".to_string(),
+        asimov_core::ContentBlock::ToolUse { id, name, input } => {
             format!(
                 "[Tool: {} (ID: {})]\n{}",
                 name,
@@ -338,7 +338,7 @@ fn format_block_for_json(block: &claurst_core::ContentBlock) -> String {
                 serde_json::to_string_pretty(input).unwrap_or_default()
             )
         }
-        claurst_core::ContentBlock::ToolResult {
+        asimov_core::ContentBlock::ToolResult {
             tool_use_id: _,
             content,
             is_error,
@@ -349,12 +349,12 @@ fn format_block_for_json(block: &claurst_core::ContentBlock) -> String {
                 ""
             };
             let result_text = match content {
-                claurst_core::ToolResultContent::Text(text) => text.clone(),
-                claurst_core::ToolResultContent::Blocks(blocks) => {
+                asimov_core::ToolResultContent::Text(text) => text.clone(),
+                asimov_core::ToolResultContent::Blocks(blocks) => {
                     blocks
                         .iter()
                         .filter_map(|b| match b {
-                            claurst_core::ContentBlock::Text { text } => Some(text.clone()),
+                            asimov_core::ContentBlock::Text { text } => Some(text.clone()),
                             _ => None,
                         })
                         .collect::<Vec<_>>()
@@ -363,7 +363,7 @@ fn format_block_for_json(block: &claurst_core::ContentBlock) -> String {
             };
             format!("{}{}", error_marker, result_text)
         }
-        claurst_core::ContentBlock::Thinking { thinking, .. } => thinking.clone(),
+        asimov_core::ContentBlock::Thinking { thinking, .. } => thinking.clone(),
         _ => "[Unsupported content type]".to_string(),
     }
 }

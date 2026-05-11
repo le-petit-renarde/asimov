@@ -9,7 +9,7 @@
 use crate::client::McpClient;
 use crate::expand_server_config;
 use crate::oauth;
-use claurst_core::config::McpServerConfig;
+use asimov_core::config::McpServerConfig;
 use dashmap::DashMap;
 use std::collections::HashMap;
 use std::sync::Arc;

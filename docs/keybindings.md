@@ -1,6 +1,6 @@
-# Claurst Keybindings Reference
+# Asimov Keybindings Reference
 
-This document covers all keyboard shortcuts in Claurst, how to customize them, vim mode, and special input behaviors.
+This document covers all keyboard shortcuts in Asimov, how to customize them, vim mode, and special input behaviors.
 
 ---
 
@@ -33,7 +33,7 @@ These bindings are active in all contexts.
 | Key | Action | Description |
 |-----|--------|-------------|
 | `Ctrl+C` | interrupt | Interrupt the current operation (non-rebindable) |
-| `Ctrl+D` | exit | Exit Claurst (non-rebindable) |
+| `Ctrl+D` | exit | Exit Asimov (non-rebindable) |
 | `Ctrl+L` | redraw | Redraw the terminal screen |
 | `Ctrl+R` | historySearch | Open interactive history search |
 | `Ctrl+B` | createBranch | Create a new git branch |
@@ -69,7 +69,7 @@ These bindings are active when focus is in the chat input field.
 
 ### Confirmation Context
 
-These bindings are active when Claurst is displaying a yes/no confirmation prompt (e.g., tool permission requests).
+These bindings are active when Asimov is displaying a yes/no confirmation prompt (e.g., tool permission requests).
 
 | Key | Action | Description |
 |-----|--------|-------------|
@@ -83,7 +83,7 @@ These bindings are active when Claurst is displaying a yes/no confirmation promp
 
 ## Keybinding Contexts
 
-Claurst uses a context system so that the same key can have different effects depending on where focus is. A binding in a more specific context takes precedence over a binding in a broader context.
+Asimov uses a context system so that the same key can have different effects depending on where focus is. A binding in a more specific context takes precedence over a binding in a broader context.
 
 | Context | Description |
 |---------|-------------|
@@ -152,11 +152,11 @@ Key notation uses lowercase letters, with modifier prefixes separated by `+`:
 
 Special key names: `enter`, `escape`, `tab`, `backspace`, `delete`, `up`, `down`, `left`, `right`, `home`, `end`, `pageup`, `pagedown`, `f1` through `f12`.
 
-After editing the file, run `/keybindings` and then exit to trigger a reload, or restart Claurst.
+After editing the file, run `/keybindings` and then exit to trigger a reload, or restart Asimov.
 
 ### Chord Bindings
 
-Claurst supports chord bindings — multi-key sequences where you press a leader key and then a follow-up key. Chord bindings are defined with a `chord` array instead of a single `key`:
+Asimov supports chord bindings — multi-key sequences where you press a leader key and then a follow-up key. Chord bindings are defined with a `chord` array instead of a single `key`:
 
 ```json
 {
@@ -166,7 +166,7 @@ Claurst supports chord bindings — multi-key sequences where you press a leader
 }
 ```
 
-The first key in the chord acts as the leader. After pressing the leader key, Claurst enters a brief chord-wait state (500 ms by default). If the follow-up key arrives within that window, the chord fires. If the timeout expires or a different key is pressed, the leader key's default action (if any) fires instead.
+The first key in the chord acts as the leader. After pressing the leader key, Asimov enters a brief chord-wait state (500 ms by default). If the follow-up key arrives within that window, the chord fires. If the timeout expires or a different key is pressed, the leader key's default action (if any) fires instead.
 
 Chords can be up to two keys deep. Three-key chords are not supported.
 
@@ -189,7 +189,7 @@ The following keys have fixed behavior and cannot be rebound:
 | Key | Fixed behavior |
 |-----|---------------|
 | `Ctrl+C` | Interrupt current operation / send SIGINT to foreground process |
-| `Ctrl+D` | Exit Claurst when input is empty; signal EOF when input has content |
+| `Ctrl+D` | Exit Asimov when input is empty; signal EOF when input has content |
 | `Ctrl+M` | Identical to `Enter` at the terminal level; always submits the message |
 
 These keys are handled at the terminal input layer before the keybinding system processes events. Overriding them in `keybindings.json` has no effect.
@@ -280,11 +280,11 @@ This is equivalent to pressing `Ctrl+C` during streaming, except that `Ctrl+C` a
 
 Terminal key events for `Ctrl+<key>` combinations are reported as raw control codes (`0x01` through `0x1A` for `Ctrl+A` through `Ctrl+Z`). These codes map to the physical QWERTY key position, not the character printed on the key.
 
-On non-English keyboard layouts (Cyrillic, Arabic, Greek, CJK, etc.), the Latin letters used in Claurst's shortcuts may not appear on the keycaps, and some input methods send layout-translated scan codes for Ctrl combinations — causing Claurst to miss the shortcut entirely.
+On non-English keyboard layouts (Cyrillic, Arabic, Greek, CJK, etc.), the Latin letters used in Asimov's shortcuts may not appear on the keycaps, and some input methods send layout-translated scan codes for Ctrl combinations — causing Asimov to miss the shortcut entirely.
 
 ### The Fix
 
-Claurst resolves this by mapping `Ctrl+<scancode>` events to their QWERTY positional equivalents before keybinding lookup. Concretely:
+Asimov resolves this by mapping `Ctrl+<scancode>` events to their QWERTY positional equivalents before keybinding lookup. Concretely:
 
 1. When a `Ctrl+<key>` event arrives, the physical scan position is extracted.
 2. That position is mapped to the corresponding QWERTY letter (e.g., physical position of the Cyrillic `Ф` key = QWERTY `A` position).
@@ -310,6 +310,6 @@ Layout-aware bindings are not recommended for the standard workflow bindings bec
 
 ### Alt Key on macOS
 
-On macOS, `Alt` (Option) key combinations produce special Unicode characters at the OS level before they reach the terminal. Claurst intercepts these at the terminal input layer and re-emits them as `alt+<key>` events using the same positional mapping described above.
+On macOS, `Alt` (Option) key combinations produce special Unicode characters at the OS level before they reach the terminal. Asimov intercepts these at the terminal input layer and re-emits them as `alt+<key>` events using the same positional mapping described above.
 
 If an `alt+<key>` binding does not fire on macOS, check whether your terminal emulator is configured to send `Escape + key` sequences for Option key combinations (the iTerm2 and Alacritty option is "Use Option as Meta Key" or equivalent).

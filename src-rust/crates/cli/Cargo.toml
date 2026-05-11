@@ -1,27 +1,27 @@
 [package]
-name = "claurst"
+name = "asimov"
 version.workspace = true
 edition.workspace = true
 
 [[bin]]
-name = "claurst"
+name = "asimov"
 path = "src/main.rs"
 
 [features]
 default = ["voice"]
-voice = ["claurst-core/voice", "claurst-tui/voice"]
+voice = ["asimov-core/voice", "asimov-tui/voice"]
 
 [dependencies]
-claurst-core = { workspace = true }
-claurst-api = { workspace = true }
-claurst-acp = { workspace = true }
-claurst-tools = { workspace = true }
-claurst-query = { workspace = true }
-claurst-tui = { workspace = true }
-claurst-commands = { workspace = true }
-claurst-mcp = { workspace = true }
-claurst-bridge = { workspace = true }
-claurst-plugins = { workspace = true }
+asimov-core = { workspace = true }
+asimov-api = { workspace = true }
+asimov-acp = { workspace = true }
+asimov-tools = { workspace = true }
+asimov-query = { workspace = true }
+asimov-tui = { workspace = true }
+asimov-commands = { workspace = true }
+asimov-mcp = { workspace = true }
+asimov-bridge = { workspace = true }
+asimov-plugins = { workspace = true }
 tokio = { workspace = true }
 async-trait = { workspace = true }
 clap = { workspace = true }

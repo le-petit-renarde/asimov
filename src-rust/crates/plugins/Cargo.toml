@@ -1,13 +1,13 @@
 [package]
-name = "claurst-plugins"
+name = "asimov-plugins"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-description = "Plugin runtime for the Claurst CLI"
+description = "Plugin runtime for the Asimov CLI"
 
 [dependencies]
-claurst-core = { workspace = true }
+asimov-core = { workspace = true }
 
 # Async
 tokio = { workspace = true }

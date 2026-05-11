@@ -25,14 +25,14 @@ use crate::settings_screen::SettingsScreen;
 use crate::stats_dialog::StatsDialogState;
 use crate::theme_screen::ThemeScreen;
 use crate::{agents_view::{AgentInfo, AgentStatus, AgentsMenuState, AgentsRoute}, diff_viewer::DiffPane};
-use claurst_core::config::{Config, Settings, Theme};
-use claurst_core::cost::CostTracker;
-use claurst_core::file_history::FileHistory;
-use claurst_core::keybindings::{
+use asimov_core::config::{Config, Settings, Theme};
+use asimov_core::cost::CostTracker;
+use asimov_core::file_history::FileHistory;
+use asimov_core::keybindings::{
     KeyContext, KeybindingResolver, KeybindingResult, ParsedKeystroke, UserKeybindings,
 };
-use claurst_core::types::{ContentBlock, Message, Role};
-use claurst_query::QueryEvent;
+use asimov_core::types::{ContentBlock, Message, Role};
+use asimov_query::QueryEvent;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
 use ratatui::backend::CrosstermBackend;
 use ratatui::style::Color;
@@ -57,7 +57,7 @@ const PROMPT_SLASH_COMMANDS: &[(&str, &str)] = &[
     ("diff", "Inspect the current git diff"),
     ("doctor", "Run diagnostics"),
     ("effort", "Set effort level (low/medium/high/max)"),
-    ("exit", "Quit Claurst"),
+    ("exit", "Quit Asimov"),
     ("export", "Export conversation"),
     ("fast", "Toggle fast mode"),
     ("feedback", "Open session feedback survey"),
@@ -69,10 +69,10 @@ const PROMPT_SLASH_COMMANDS: &[(&str, &str)] = &[
     ("import-config", "Import CLAUDE.md and settings.json from ~/.claude"),
     ("init", "Initialize AGENTS.md for this project"),
     ("insights", "Generate a session analysis report with conversation statistics"),
-    ("install-slack-app", "Install the Claurst Slack integration"),
+    ("install-slack-app", "Install the Asimov Slack integration"),
     ("keybindings", "Show keybinding configuration"),
-    ("login", "Log in to Claurst"),
-    ("logout", "Log out of Claurst"),
+    ("login", "Log in to Asimov"),
+    ("logout", "Log out of Asimov"),
     ("mcp", "Browse configured MCP servers"),
     ("memory", "Browse and open AGENTS.md memory files"),
     ("model", "Change the AI model"),
@@ -83,7 +83,7 @@ const PROMPT_SLASH_COMMANDS: &[(&str, &str)] = &[
     ("caveman", "Caveman speech mode — save big token"),
     ("rocky", "Rocky speech mode — amaze amaze amaze"),
     ("normal", "Deactivate speech mode"),
-    ("quit", "Quit Claurst"),
+    ("quit", "Quit Asimov"),
     ("refresh", "Clear saved provider auth and model caches"),
     ("rename", "Rename this session"),
     ("resume", "Resume a previous session"),
@@ -757,7 +757,7 @@ pub struct App {
     /// Remote session URL (set when bridge connects; readable by commands).
     pub remote_session_url: Option<String>,
     /// Live MCP manager snapshot source when available.
-    pub mcp_manager: Option<Arc<claurst_mcp::McpManager>>,
+    pub mcp_manager: Option<Arc<asimov_mcp::McpManager>>,
     /// Queued request for a real MCP reconnect from the interactive loop.
     pub pending_mcp_reconnect: bool,
     /// Pending MCP panel-auth request for the interactive loop.
@@ -841,10 +841,10 @@ pub struct App {
     /// When set, the main loop should spawn the async auth task for this provider.
     pub device_auth_pending: Option<String>,
     /// Shared provider registry for dynamic model fetching.
-    pub provider_registry: Option<std::sync::Arc<claurst_api::ProviderRegistry>>,
+    pub provider_registry: Option<std::sync::Arc<asimov_api::ProviderRegistry>>,
     /// Model registry populated from models.dev — single source of truth for
     /// all provider models shown in the `/model` picker.
-    pub model_registry: claurst_api::ModelRegistry,
+    pub model_registry: asimov_api::ModelRegistry,
     /// When `true`, the main event loop should spawn an async task to fetch
     /// the model list from the current provider's `list_models()` API.
     pub model_picker_fetch_pending: bool,
@@ -855,7 +855,7 @@ pub struct App {
     pub session_list_rx:
         Option<tokio::sync::mpsc::Receiver<Vec<crate::session_browser::SessionEntry>>>,
     /// Credential store for provider API keys and OAuth tokens.
-    pub auth_store: claurst_core::AuthStore,
+    pub auth_store: asimov_core::AuthStore,
     /// Connect-a-provider dialog (/connect command).
     pub connect_dialog: DialogSelectState,
     /// Import-config source picker (/import-config command).
@@ -864,7 +864,7 @@ pub struct App {
     pub import_config_dialog: ImportConfigDialogState,
     /// Ctrl+K command palette overlay.
     pub command_palette: DialogSelectState,
-    /// Whether Claurst was launched from the user's home directory.
+    /// Whether Asimov was launched from the user's home directory.
     /// Shown as a startup notice: "Note: You have launched claude in your home directory…"
     pub home_dir_warning: bool,
     /// Output style: "auto" | "stream" | "verbose".
@@ -891,11 +891,11 @@ pub struct App {
     // ---- Voice hold-to-talk ------------------------------------------------
 
     /// The global voice recorder, Some when voice is enabled in config.
-    pub voice_recorder: Option<Arc<Mutex<claurst_core::voice::VoiceRecorder>>>,
+    pub voice_recorder: Option<Arc<Mutex<asimov_core::voice::VoiceRecorder>>>,
     /// True while recording is active (Alt+V toggled on).
     pub voice_recording: bool,
     /// Receiver for VoiceEvent messages produced by the recorder task.
-    pub voice_event_rx: Option<tokio::sync::mpsc::Receiver<claurst_core::voice::VoiceEvent>>,
+    pub voice_event_rx: Option<tokio::sync::mpsc::Receiver<asimov_core::voice::VoiceEvent>>,
     /// Receiver for model-list results fetched in the background when the
     /// /model picker opens.  Drained each frame so models appear as soon as
     /// the fetch completes.
@@ -904,7 +904,7 @@ pub struct App {
     /// Receiver for `UserQuestionEvent`s produced by the AskUserQuestion tool.
     /// When a question arrives, `ask_user_dialog` is populated and shown.
     pub user_question_rx:
-        Option<tokio::sync::mpsc::UnboundedReceiver<claurst_tools::UserQuestionEvent>>,
+        Option<tokio::sync::mpsc::UnboundedReceiver<asimov_tools::UserQuestionEvent>>,
     /// State for the model-initiated ask-user question dialog.
     pub ask_user_dialog: crate::ask_user_dialog::AskUserDialogState,
 
@@ -1258,11 +1258,11 @@ impl App {
             device_auth_pending: None,
             provider_registry: None,
             model_registry: {
-                let mut reg = claurst_api::ModelRegistry::new();
+                let mut reg = asimov_api::ModelRegistry::new();
                 // Try to load cached models.dev data from disk.
                 let cache_path = dirs::cache_dir()
                     .unwrap_or_else(|| std::path::PathBuf::from("."))
-                    .join("claurst")
+                    .join("asimov")
                     .join("models.json");
                 reg.load_cache(&cache_path);
                 reg
@@ -1270,7 +1270,7 @@ impl App {
             model_picker_fetch_pending: false,
             session_list_pending: false,
             session_list_rx: None,
-            auth_store: claurst_core::AuthStore::load(),
+            auth_store: asimov_core::AuthStore::load(),
             connect_dialog: DialogSelectState::new("Connect a provider", provider_picker_items()),
             import_config_picker: DialogSelectState::new("Import config", import_config_picker_items()),
             import_config_dialog: ImportConfigDialogState::new(),
@@ -1300,13 +1300,13 @@ impl App {
             auto_compact_running: false,
             voice_recorder: {
                 // Check whether voice input has been enabled via the /voice command
-                // (stored in ~/.claurst/ui-settings.json).  We also accept
-                // CLAURST_VOICE_ENABLED=1 as an override for easier testing.
-                let voice_on = std::env::var("CLAURST_VOICE_ENABLED")
+                // (stored in ~/.asimov/ui-settings.json).  We also accept
+                // ASIMOV_VOICE_ENABLED=1 as an override for easier testing.
+                let voice_on = std::env::var("ASIMOV_VOICE_ENABLED")
                     .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
                     .unwrap_or(false)
                     || {
-                        let path = claurst_core::config::Settings::config_dir()
+                        let path = asimov_core::config::Settings::config_dir()
                             .join("ui-settings.json");
                         std::fs::read_to_string(&path)
                             .ok()
@@ -1315,7 +1315,7 @@ impl App {
                             .unwrap_or(false)
                     };
                 if voice_on {
-                    let recorder = claurst_core::voice::global_voice_recorder();
+                    let recorder = asimov_core::voice::global_voice_recorder();
                     if let Ok(mut r) = recorder.lock() {
                         r.set_enabled(true);
                     }
@@ -1367,8 +1367,8 @@ impl App {
     /// Only enabled when the `token_budget` feature flag is active.
     #[cfg(feature = "token_budget")]
     fn load_token_budget() -> Option<u32> {
-        // First check CLAURST_TOKEN_BUDGET env var
-        if let Ok(budget_str) = std::env::var("CLAURST_TOKEN_BUDGET") {
+        // First check ASIMOV_TOKEN_BUDGET env var
+        if let Ok(budget_str) = std::env::var("ASIMOV_TOKEN_BUDGET") {
             if let Ok(budget) = budget_str.parse::<u32>() {
                 return Some(budget);
             }
@@ -1387,17 +1387,17 @@ impl App {
         self.import_config_picker.open();
     }
 
-    fn import_selection_from_picker(id: &str) -> Option<claurst_core::ImportSelection> {
+    fn import_selection_from_picker(id: &str) -> Option<asimov_core::ImportSelection> {
         match id {
-            "claude-md" => Some(claurst_core::ImportSelection::ClaudeMd),
-            "settings" => Some(claurst_core::ImportSelection::Settings),
-            "both" => Some(claurst_core::ImportSelection::Both),
+            "claude-md" => Some(asimov_core::ImportSelection::ClaudeMd),
+            "settings" => Some(asimov_core::ImportSelection::Settings),
+            "both" => Some(asimov_core::ImportSelection::Both),
             _ => None,
         }
     }
 
-    fn open_import_config_preview(&mut self, selection: claurst_core::ImportSelection) {
-        match claurst_core::build_import_preview(selection) {
+    fn open_import_config_preview(&mut self, selection: asimov_core::ImportSelection) {
+        match asimov_core::build_import_preview(selection) {
             Ok(preview) => {
                 self.import_config_dialog.open(preview);
             }
@@ -1412,12 +1412,12 @@ impl App {
             self.import_config_dialog.close();
             return;
         };
-        match claurst_core::execute_import(selection) {
+        match asimov_core::execute_import(selection) {
             Ok(result) => {
-                let paths = claurst_core::ImportPaths::detect();
+                let paths = asimov_core::ImportPaths::detect();
                 let new_settings = Settings::load_sync().unwrap_or_default();
                 let new_config = new_settings.effective_config();
-                let result_message = claurst_core::summarize_import_result(&result, &paths);
+                let result_message = asimov_core::summarize_import_result(&result, &paths);
                 let imported_mcp = result.imported_fields.iter().any(|f| f == "mcpServers");
                 self.config = new_config.clone();
                 self.model_name = self.config.effective_model().to_string();
@@ -1425,10 +1425,10 @@ impl App {
                 self.refresh_context_window_size();
                 self.context_used_tokens = 0;
                 self.has_credentials = self.config.resolve_api_key().is_some();
-                self.auth_store = claurst_core::AuthStore::load();
+                self.auth_store = asimov_core::AuthStore::load();
                 self.plan_mode = matches!(
                     self.config.permission_mode,
-                    claurst_core::config::PermissionMode::Plan
+                    asimov_core::config::PermissionMode::Plan
                 );
                 self.output_style = match self.config.output_style.as_deref() {
                     Some("stream") => "stream".to_string(),
@@ -1558,7 +1558,7 @@ impl App {
     fn open_model_picker_for_provider(&mut self, provider_id: &str, title: Option<String>) {
         let cache_path = dirs::cache_dir()
             .unwrap_or_else(|| std::path::PathBuf::from("."))
-            .join("claurst")
+            .join("asimov")
             .join("models.json");
         if cache_path.exists() {
             self.model_registry.load_cache(&cache_path);
@@ -1836,15 +1836,15 @@ impl App {
     pub fn apply_provider_refresh(
         &mut self,
         config: Config,
-        provider_registry: Option<std::sync::Arc<claurst_api::ProviderRegistry>>,
-        auth_store: claurst_core::AuthStore,
+        provider_registry: Option<std::sync::Arc<asimov_api::ProviderRegistry>>,
+        auth_store: asimov_core::AuthStore,
         has_credentials: bool,
         status_message: String,
     ) {
         self.close_secondary_views();
         self.config = config;
         self.provider_registry = provider_registry;
-        self.model_registry = claurst_api::ModelRegistry::new();
+        self.model_registry = asimov_api::ModelRegistry::new();
         self.auth_store = auth_store;
         self.connect_dialog = DialogSelectState::new("Connect a provider", provider_picker_items());
         self.import_config_picker = DialogSelectState::new("Import config", import_config_picker_items());
@@ -1993,7 +1993,7 @@ impl App {
                 true
             }
             "plan" => {
-                use claurst_core::config::PermissionMode;
+                use asimov_core::config::PermissionMode;
                 self.plan_mode = !self.plan_mode;
                 self.config.permission_mode = if self.plan_mode {
                     PermissionMode::Plan
@@ -2001,11 +2001,11 @@ impl App {
                     PermissionMode::Default
                 };
                 self.status_message = Some(if self.plan_mode {
-                    "Plan mode ON — Claurst will plan before acting.".to_string()
+                    "Plan mode ON — Asimov will plan before acting.".to_string()
                 } else {
                     "Plan mode OFF.".to_string()
                 });
-                // Allow CLI path to also run (sends UserMessage to Claurst).
+                // Allow CLI path to also run (sends UserMessage to Asimov).
                 false
             }
             "compact" => {
@@ -2089,7 +2089,7 @@ impl App {
                     self.voice_mode_notice.dismiss();
                     self.status_message = Some("Voice mode disabled.".to_string());
                 } else {
-                    let recorder = claurst_core::voice::global_voice_recorder();
+                    let recorder = asimov_core::voice::global_voice_recorder();
                     if let Ok(mut r) = recorder.lock() {
                         r.set_enabled(true);
                     }
@@ -2242,20 +2242,20 @@ impl App {
                         .collect();
 
                     let (status, error_message) = match manager.server_status(&server.name) {
-                        claurst_mcp::McpServerStatus::Connected { .. } => {
+                        asimov_mcp::McpServerStatus::Connected { .. } => {
                             (McpViewStatus::Connected, None)
                         }
-                        claurst_mcp::McpServerStatus::Connecting => {
+                        asimov_mcp::McpServerStatus::Connecting => {
                             (McpViewStatus::Connecting, None)
                         }
-                        claurst_mcp::McpServerStatus::Disconnected { last_error } => {
+                        asimov_mcp::McpServerStatus::Disconnected { last_error } => {
                             if last_error.is_some() {
                                 (McpViewStatus::Error, last_error)
                             } else {
                                 (McpViewStatus::Disconnected, None)
                             }
                         }
-                        claurst_mcp::McpServerStatus::Failed { error, .. } => {
+                        asimov_mcp::McpServerStatus::Failed { error, .. } => {
                             (McpViewStatus::Error, Some(error))
                         }
                     };
@@ -2425,7 +2425,7 @@ impl App {
     /// appropriate.  Call this after updating `token_count`.
     pub fn check_token_warnings(&mut self) {
         let window =
-            claurst_query::context_window_for_model(&self.model_name) as u32;
+            asimov_query::context_window_for_model(&self.model_name) as u32;
         if window == 0 {
             return;
         }
@@ -2608,7 +2608,7 @@ impl App {
         self.refresh_turn_diff_from_history();
     }
 
-    pub fn attach_mcp_manager(&mut self, mcp_manager: Arc<claurst_mcp::McpManager>) {
+    pub fn attach_mcp_manager(&mut self, mcp_manager: Arc<asimov_mcp::McpManager>) {
         self.mcp_manager = Some(mcp_manager);
     }
 
@@ -2708,7 +2708,7 @@ impl App {
     /// Persist `has_completed_onboarding = true` to the settings file.
     /// Best-effort: failures are silently ignored to not disrupt the session.
     fn persist_onboarding_complete() -> anyhow::Result<()> {
-        let mut settings = claurst_core::config::Settings::load_sync()?;
+        let mut settings = asimov_core::config::Settings::load_sync()?;
         settings.has_completed_onboarding = true;
         settings.save_sync()
     }
@@ -2806,13 +2806,13 @@ impl App {
                         let provider_name = self.device_auth_dialog.provider_name.clone();
                         let token = token.clone();
                         let credential = if provider_id == "github-copilot" {
-                            claurst_core::StoredCredential::OAuthToken {
+                            asimov_core::StoredCredential::OAuthToken {
                                 access: token.clone(),
                                 refresh: token,
                                 expires: 0,
                             }
                         } else {
-                            claurst_core::StoredCredential::ApiKey { key: token }
+                            asimov_core::StoredCredential::ApiKey { key: token }
                         };
                         self.auth_store.set(
                             &provider_id,
@@ -2879,7 +2879,7 @@ impl App {
                     if !api_key.is_empty() {
                         self.auth_store.set(
                             &provider_id,
-                            claurst_core::StoredCredential::ApiKey { key: api_key },
+                            asimov_core::StoredCredential::ApiKey { key: api_key },
                         );
                         self.activate_provider(provider_id, provider_name, "Connected to");
                     }
@@ -2915,7 +2915,7 @@ impl App {
                         self.persist_custom_provider_base_url(&base_url);
                         self.auth_store.set(
                             &provider_id,
-                            claurst_core::StoredCredential::ApiKey { key: api_key },
+                            asimov_core::StoredCredential::ApiKey { key: api_key },
                         );
                         self.activate_provider(provider_id, provider_name, "Connected to");
                     } else {
@@ -2956,7 +2956,7 @@ impl App {
                             }
                             "anthropic" => {
                                 // Anthropic: use API key from console.anthropic.com
-                                // (OAuth requires a registered app which Claurst doesn't have)
+                                // (OAuth requires a registered app which Asimov doesn't have)
                                 self.key_input_dialog.open(selected.id.clone(), selected.title.clone());
                             }
                             "custom-openai" => {
@@ -3841,7 +3841,7 @@ impl App {
             // Default → AcceptEdits → BypassPermissions → Default
             // Mirrors TS bottom-left indicator cycling behaviour.
             KeyCode::BackTab if !self.is_streaming => {
-                use claurst_core::config::PermissionMode;
+                use asimov_core::config::PermissionMode;
                 self.config.permission_mode = match self.config.permission_mode {
                     PermissionMode::Default => PermissionMode::AcceptEdits,
                     PermissionMode::AcceptEdits => PermissionMode::BypassPermissions,
@@ -3928,7 +3928,7 @@ impl App {
             // ---- Toggle last thinking block (t key) -------------------
             KeyCode::Char('t') if !self.is_streaming => {
                 // Find the last thinking block in the message list and toggle it
-                use claurst_core::types::ContentBlock;
+                use asimov_core::types::ContentBlock;
                 use std::collections::hash_map::DefaultHasher;
                 use std::hash::{Hash, Hasher};
                 'outer: for msg in self.messages.iter().rev() {
@@ -4487,7 +4487,7 @@ impl App {
             }
             "reverseIndent" => {
                 // Shift+Tab: Reverse indent (cycle permission mode)
-                use claurst_core::config::PermissionMode;
+                use asimov_core::config::PermissionMode;
                 self.config.permission_mode = match self.config.permission_mode {
                     PermissionMode::Default => PermissionMode::AcceptEdits,
                     PermissionMode::AcceptEdits => PermissionMode::BypassPermissions,
@@ -5225,15 +5225,15 @@ impl App {
                 }
                 self.is_streaming = true;
                 match stream_evt {
-                    claurst_api::AnthropicStreamEvent::ContentBlockDelta { delta, .. } => {
+                    asimov_api::AnthropicStreamEvent::ContentBlockDelta { delta, .. } => {
                         // Reset stall timer on any incoming delta — we're making progress.
                         self.stall_start = None;
                         match delta {
-                            claurst_api::streaming::ContentDelta::TextDelta { text } => {
+                            asimov_api::streaming::ContentDelta::TextDelta { text } => {
                                 self.streaming_text.push_str(&text);
                                 self.invalidate_transcript();
                             }
-                            claurst_api::streaming::ContentDelta::ThinkingDelta { thinking } => {
+                            asimov_api::streaming::ContentDelta::ThinkingDelta { thinking } => {
                                 debug!(len = thinking.len(), "Thinking delta received");
                                 self.streaming_thinking.push_str(&thinking);
                                 self.invalidate_transcript();
@@ -5241,7 +5241,7 @@ impl App {
                             _ => {}
                         }
                     }
-                    claurst_api::AnthropicStreamEvent::MessageStop => {
+                    asimov_api::AnthropicStreamEvent::MessageStop => {
                         self.is_streaming = false;
                         self.spinner_verb = None;
                         self.stall_start = None;
@@ -5360,7 +5360,7 @@ impl App {
             }
             QueryEvent::TokenWarning { state, pct_used } => {
                 // Push a notification for context window warnings (notification + threshold tracking).
-                use claurst_query::compact::TokenWarningState;
+                use asimov_query::compact::TokenWarningState;
 
                 // Only escalate — never repeat a threshold already shown.
                 match state {
@@ -5427,7 +5427,7 @@ impl App {
                 let (tx, rx) = tokio::sync::mpsc::channel(1);
                 self.session_list_rx = Some(rx);
                 tokio::spawn(async move {
-                    let sessions = claurst_core::history::list_sessions().await;
+                    let sessions = asimov_core::history::list_sessions().await;
                     let entries: Vec<crate::session_browser::SessionEntry> = sessions
                         .into_iter()
                         .map(|s| {
@@ -5460,7 +5460,7 @@ impl App {
             // TranscriptReady event we insert the text directly into the
             // prompt so the user can review and submit it.
             {
-                use claurst_core::voice::VoiceEvent;
+                use asimov_core::voice::VoiceEvent;
                 let mut events = Vec::new();
                 if let Some(ref mut rx) = self.voice_event_rx {
                     while let Ok(ev) = rx.try_recv() {
@@ -5643,7 +5643,7 @@ mod tests {
 
     fn make_app() -> App {
         let config = Config::default();
-        let cost_tracker = claurst_core::cost::CostTracker::new();
+        let cost_tracker = asimov_core::cost::CostTracker::new();
         App::new(config, cost_tracker)
     }
 

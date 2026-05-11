@@ -1,4 +1,4 @@
-// claurst-api: Anthropic API client with streaming SSE support for Claurst
+// asimov-api: Anthropic API client with streaming SSE support for Asimov
 // Rust port.
 //
 // Handles:
@@ -9,9 +9,9 @@
 // - Rate-limit (429) and overloaded (529) retry with exponential back-off
 // - Authentication via API key from env or config
 
-use claurst_core::constants::{ANTHROPIC_API_VERSION, ANTHROPIC_BETA_HEADER};
-use claurst_core::error::ClaudeError;
-use claurst_core::types::{ContentBlock, Message, MessageContent, Role, ToolDefinition, UsageInfo};
+use asimov_core::constants::{ANTHROPIC_API_VERSION, ANTHROPIC_BETA_HEADER};
+use asimov_core::error::ClaudeError;
+use asimov_core::types::{ContentBlock, Message, MessageContent, Role, ToolDefinition, UsageInfo};
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -436,7 +436,7 @@ pub mod client {
         fn default() -> Self {
             Self {
                 api_key: String::new(),
-                api_base: claurst_core::constants::ANTHROPIC_API_BASE.to_string(),
+                api_base: asimov_core::constants::ANTHROPIC_API_BASE.to_string(),
                 api_version: ANTHROPIC_API_VERSION.to_string(),
                 beta_features: ANTHROPIC_BETA_HEADER.to_string(),
                 max_retries: 5,
@@ -477,7 +477,7 @@ pub mod client {
         }
 
         /// Convenience constructor that resolves the key from config/env.
-        pub fn from_config(cfg: &claurst_core::config::Config) -> anyhow::Result<Self> {
+        pub fn from_config(cfg: &asimov_core::config::Config) -> anyhow::Result<Self> {
             let api_key = cfg
                 .resolve_api_key()
                 .ok_or_else(|| anyhow::anyhow!("No API key found"))?;
@@ -539,7 +539,7 @@ pub mod client {
                         model
                     )
                 } else {
-                    "Set ANTHROPIC_API_KEY, run `claurst auth login`, \
+                    "Set ANTHROPIC_API_KEY, run `asimov auth login`, \
                      or use --provider to select a different provider (e.g. --provider openai).".to_string()
                 };
                 return Err(ClaudeError::Auth(
@@ -642,7 +642,7 @@ pub mod client {
                 } else if model.starts_with("llama") {
                     format!("Model '{}' looks like a Llama model. Use `--provider groq` or `--provider ollama` for local.", model)
                 } else {
-                    "Set ANTHROPIC_API_KEY, run `claurst auth login`, \
+                    "Set ANTHROPIC_API_KEY, run `asimov auth login`, \
                      or use --provider to select a different provider (e.g. --provider openai).".to_string()
                 };
                 return Err(ClaudeError::Auth(

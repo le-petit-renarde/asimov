@@ -8,8 +8,8 @@ use std::pin::Pin;
 
 use async_stream::stream;
 use async_trait::async_trait;
-use claurst_core::provider_id::{ModelId, ProviderId};
-use claurst_core::types::{ContentBlock, UsageInfo};
+use asimov_core::provider_id::{ModelId, ProviderId};
+use asimov_core::types::{ContentBlock, UsageInfo};
 use futures::Stream;
 use serde_json::{json, Value};
 use tracing::debug;
@@ -270,10 +270,10 @@ impl OpenAiCompatProvider {
     /// the API ignores it anyway and skipping saves tokens.
     fn inject_reasoning_for_tool_turns(
         json_messages: &mut Vec<Value>,
-        original_messages: &[claurst_core::types::Message],
+        original_messages: &[asimov_core::types::Message],
         field: &str,
     ) {
-        use claurst_core::types::{MessageContent, Role};
+        use asimov_core::types::{MessageContent, Role};
 
         // Collect reasoning texts from assistant messages that have both
         // Thinking blocks and ToolUse blocks, preserving order.

@@ -1,0 +1,51 @@
+[package]
+name = "asimov-search"
+version.workspace = true
+edition.workspace = true
+
+[features]
+default = []
+semantic = []
+watch = []
+
+[dependencies]
+# Async runtime
+tokio = { workspace = true }
+tokio-stream = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Error handling
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+
+# Logging
+tracing = { workspace = true }
+
+# Utilities
+once_cell = { workspace = true }
+parking_lot = { workspace = true }
+dashmap = { workspace = true }
+walkdir = { workspace = true }
+glob = { workspace = true }
+regex = { workspace = true }
+chrono = { workspace = true }
+dirs = { workspace = true }
+
+# Database
+rusqlite = { workspace = true }
+
+# Hashing
+sha2 = { workspace = true }
+hex = { workspace = true }
+
+# Compression
+lz4_flex = "0.11"
+
+# Text extraction
+syntect = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

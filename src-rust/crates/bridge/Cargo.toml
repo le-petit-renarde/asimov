@@ -1,12 +1,12 @@
 [package]
-name = "claurst-bridge"
+name = "asimov-bridge"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
-claurst-core = { workspace = true }
-claurst-api = { workspace = true }
-claurst-query = { workspace = true }
+asimov-core = { workspace = true }
+asimov-api = { workspace = true }
+asimov-query = { workspace = true }
 tokio = { workspace = true }
 tokio-stream = { workspace = true }
 futures = { workspace = true }

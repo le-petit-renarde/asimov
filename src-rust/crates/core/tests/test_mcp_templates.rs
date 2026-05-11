@@ -1,6 +1,6 @@
 // Integration tests for MCP template rendering
 
-use claurst_core::mcp_templates::TemplateRenderer;
+use asimov_core::mcp_templates::TemplateRenderer;
 use serde_json::json;
 
 #[test]

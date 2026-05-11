@@ -1,12 +1,12 @@
 [package]
-name = "claurst-acp"
+name = "asimov-acp"
 version.workspace = true
 edition.workspace = true
-description = "Agent Client Protocol (ACP) server for Claurst — JSON-RPC 2.0 over stdio"
+description = "Agent Client Protocol (ACP) server for Asimov — JSON-RPC 2.0 over stdio"
 
 [dependencies]
-claurst-core = { workspace = true }
-claurst-api = { workspace = true }
+asimov-core = { workspace = true }
+asimov-api = { workspace = true }
 tokio = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

@@ -1,6 +1,6 @@
-# Claurst Authentication Guide
+# Asimov Authentication Guide
 
-Claurst needs credentials to call the Anthropic API (or another provider's
+Asimov needs credentials to call the Anthropic API (or another provider's
 API). This document covers every supported authentication method, how tokens
 are stored, how to check and clear credentials, and how to authenticate with
 non-Anthropic providers.
@@ -9,12 +9,12 @@ non-Anthropic providers.
 
 ## Authentication Methods
 
-Claurst checks for credentials in the following priority order:
+Asimov checks for credentials in the following priority order:
 
 1. `--api-key` flag (highest priority, session-only)
-2. `api_key` field in `~/.claurst/settings.json`
+2. `api_key` field in `~/.asimov/settings.json`
 3. `ANTHROPIC_API_KEY` environment variable
-4. Saved OAuth tokens in `~/.claurst/oauth_tokens.json`
+4. Saved OAuth tokens in `~/.asimov/oauth_tokens.json`
 
 The first non-empty credential found is used. Provider-specific credentials
 (OpenAI, Google, etc.) follow the same pattern but use their own environment
@@ -61,7 +61,7 @@ $env:ANTHROPIC_API_KEY = "sk-ant-api03-..."
 
 **Option B: Settings file**
 
-Store the key in `~/.claurst/settings.json`. Ensure the file has restricted
+Store the key in `~/.asimov/settings.json`. Ensure the file has restricted
 permissions on shared systems.
 
 ```json
@@ -77,39 +77,39 @@ permissions on shared systems.
 Pass the key directly for a single run. It is not persisted anywhere.
 
 ```bash
-claurst --api-key "sk-ant-api03-..." "your prompt"
+asimov --api-key "sk-ant-api03-..." "your prompt"
 ```
 
 ---
 
 ## Method 2: OAuth Login (Browser-based)
 
-Claurst supports an OAuth 2.0 PKCE flow that authenticates through either
+Asimov supports an OAuth 2.0 PKCE flow that authenticates through either
 the Anthropic Console or Claude.ai in your browser.
 
-> **Important:** The OAuth client IDs in Claurst are registered to Anthropic's
+> **Important:** The OAuth client IDs in Asimov are registered to Anthropic's
 > official Claude Code CLI application. Anthropic's authorization server may
-> reject or misattribute OAuth requests originating from Claurst. The API key
-> method is the recommended path for Claurst users.
+> reject or misattribute OAuth requests originating from Asimov. The API key
+> method is the recommended path for Asimov users.
 >
 > If OAuth login is attempted and fails, use Method 1 (API key) instead.
 
 ### Claude.ai flow (default)
 
 ```bash
-claurst auth login
+asimov auth login
 ```
 
-1. Claurst generates a PKCE code verifier and code challenge.
+1. Asimov generates a PKCE code verifier and code challenge.
 2. A temporary localhost HTTP server starts on a random port to receive the
    callback.
-3. The authorization URL is printed to the terminal and Claurst attempts to
+3. The authorization URL is printed to the terminal and Asimov attempts to
    open it in your default browser.
 4. Complete the authorization in the browser (Claude.ai login page).
 5. The browser redirects to `http://localhost:<port>/callback` with an
    authorization code.
-6. Claurst exchanges the code for tokens via the token endpoint.
-7. Tokens are saved to `~/.claurst/oauth_tokens.json`.
+6. Asimov exchanges the code for tokens via the token endpoint.
+7. Tokens are saved to `~/.asimov/oauth_tokens.json`.
 
 This flow produces a Bearer token (`user:inference` scope) used directly for
 API calls.
@@ -117,17 +117,17 @@ API calls.
 ### Console flow (creates an API key)
 
 ```bash
-claurst auth login --console
+asimov auth login --console
 ```
 
 This uses the Anthropic Console authorization endpoint. After token exchange,
-Claurst calls the Console API to create a new API key, stores it in
-`~/.claurst/oauth_tokens.json`, and uses it as a standard API key for
+Asimov calls the Console API to create a new API key, stores it in
+`~/.asimov/oauth_tokens.json`, and uses it as a standard API key for
 subsequent requests (not as a Bearer token).
 
 ### Manual fallback
 
-If the browser does not open automatically, Claurst prints the full
+If the browser does not open automatically, Asimov prints the full
 authorization URL. Copy and paste it into a browser. After you authorize,
 paste the authorization code shown in the browser back into the terminal
 when prompted.
@@ -142,11 +142,11 @@ is used internally for GitHub Copilot authentication.
 
 For headless environments without a Copilot subscription, the API key method
 (Method 1) is the recommended approach. Set `ANTHROPIC_API_KEY` in the
-environment before running Claurst in a CI/CD or server context.
+environment before running Asimov in a CI/CD or server context.
 
 ```bash
 # Headless / CI example
-ANTHROPIC_API_KEY="sk-ant-..." claurst --print "summarize the last 10 commits"
+ANTHROPIC_API_KEY="sk-ant-..." asimov --print "summarize the last 10 commits"
 ```
 
 ---
@@ -158,7 +158,7 @@ ANTHROPIC_API_KEY="sk-ant-..." claurst --print "summarize the last 10 commits"
 Saved to:
 
 ```
-~/.claurst/oauth_tokens.json
+~/.asimov/oauth_tokens.json
 ```
 
 The file contains the access token, optional refresh token, expiry timestamp,
@@ -183,7 +183,7 @@ it to version control.
 API keys for non-Anthropic providers are stored in:
 
 ```
-~/.claurst/auth.json
+~/.asimov/auth.json
 ```
 
 This file is keyed by provider ID and contains either an `api` credential
@@ -208,7 +208,7 @@ This file is keyed by provider ID and contains either an `api` credential
 ## Checking Authentication Status
 
 ```bash
-claurst auth status
+asimov auth status
 ```
 
 Prints a human-readable summary:
@@ -224,7 +224,7 @@ Logged in.
 For machine-readable output:
 
 ```bash
-claurst auth status --json
+asimov auth status --json
 ```
 
 Example JSON output:
@@ -243,7 +243,7 @@ The exit code is `0` when logged in, `1` when not logged in. This makes
 `auth status` suitable for scripting:
 
 ```bash
-if claurst auth status > /dev/null 2>&1; then
+if asimov auth status > /dev/null 2>&1; then
   echo "credentials present"
 fi
 ```
@@ -253,45 +253,45 @@ fi
 ## Logging Out
 
 ```bash
-claurst auth logout
+asimov auth logout
 ```
 
-This removes `~/.claurst/oauth_tokens.json`. API keys set via environment
+This removes `~/.asimov/oauth_tokens.json`. API keys set via environment
 variables or `settings.json` are not affected; you must remove those manually.
 
 To fully clear all stored credentials:
 
 ```bash
-claurst auth logout
-rm -f ~/.claurst/auth.json
+asimov auth logout
+rm -f ~/.asimov/auth.json
 ```
 
 ---
 
 ## Token Refresh
 
-When Claurst loads OAuth tokens from `~/.claurst/oauth_tokens.json` and the
+When Asimov loads OAuth tokens from `~/.asimov/oauth_tokens.json` and the
 access token is expired, it automatically attempts a silent refresh:
 
 1. A `POST` request is sent to the token endpoint with the stored refresh token.
 2. If successful, the new access token (and optionally a new refresh token) is
-   written back to `~/.claurst/oauth_tokens.json`.
+   written back to `~/.asimov/oauth_tokens.json`.
 3. The refreshed token is used for the current session.
 
 If the refresh fails (network error, expired refresh token, revoked grant),
-Claurst falls back to any configured API key. If no API key is available,
-authentication fails and you must run `claurst auth login` again.
+Asimov falls back to any configured API key. If no API key is available,
+authentication fails and you must run `asimov auth login` again.
 
 ---
 
 ## Multiple Providers
 
-Claurst supports simultaneous configuration of credentials for multiple
+Asimov supports simultaneous configuration of credentials for multiple
 providers. Each provider looks for credentials in this order:
 
 1. `api_key` in the provider's entry under `providers` in `settings.json`
 2. The provider-specific environment variable (see table below)
-3. The credential stored in `~/.claurst/auth.json`
+3. The credential stored in `~/.asimov/auth.json`
 
 ### Provider environment variables
 
@@ -346,13 +346,13 @@ Switch providers at runtime:
 
 ```bash
 # Use OpenAI for this session
-claurst --provider openai --model gpt-4o "your prompt"
+asimov --provider openai --model gpt-4o "your prompt"
 
 # Use a local Ollama model (no API key needed)
-claurst --provider ollama --model llama3.2 "your prompt"
+asimov --provider ollama --model llama3.2 "your prompt"
 
 # Or via environment variable
-CLAURST_PROVIDER=google claurst "your prompt"
+ASIMOV_PROVIDER=google asimov "your prompt"
 ```
 
 ---
@@ -367,21 +367,21 @@ Providers that run locally require no API key:
 # Install Ollama from https://ollama.ai and pull a model
 ollama pull llama3.2
 
-# Run Claurst against it
-claurst --provider ollama --model llama3.2
+# Run Asimov against it
+asimov --provider ollama --model llama3.2
 ```
 
 **LM Studio:**
 
 ```bash
 # Start the LM Studio local server (default port 1234)
-claurst --provider lmstudio
+asimov --provider lmstudio
 ```
 
 **llama.cpp server:**
 
 ```bash
-claurst --provider llamacpp --api-base http://localhost:8080
+asimov --provider llamacpp --api-base http://localhost:8080
 ```
 
 ---
@@ -390,16 +390,16 @@ claurst --provider llamacpp --api-base http://localhost:8080
 
 - Store API keys in environment variables or a secrets manager rather than in
   `settings.json`, especially on shared or CI systems.
-- Restrict permissions on `~/.claurst/` to your user only:
+- Restrict permissions on `~/.asimov/` to your user only:
   ```bash
-  chmod 700 ~/.claurst
-  chmod 600 ~/.claurst/oauth_tokens.json
-  chmod 600 ~/.claurst/auth.json
-  chmod 600 ~/.claurst/settings.json
+  chmod 700 ~/.asimov
+  chmod 600 ~/.asimov/oauth_tokens.json
+  chmod 600 ~/.asimov/auth.json
+  chmod 600 ~/.asimov/settings.json
   ```
-- Do not commit `~/.claurst/` to version control.
-- Add `.claurst/` to your project's `.gitignore` to prevent accidentally
+- Do not commit `~/.asimov/` to version control.
+- Add `.asimov/` to your project's `.gitignore` to prevent accidentally
   committing project-level settings files that may contain keys.
 - Rotate API keys periodically from the Anthropic Console.
-- Use `claurst auth logout` on shared machines before logging out of your
+- Use `asimov auth logout` on shared machines before logging out of your
   user session.

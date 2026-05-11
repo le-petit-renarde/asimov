@@ -1,6 +1,6 @@
 // goal.rs — Per-session durable objectives (the /goal feature).
 //
-// State is persisted to ~/.claurst/goals.sqlite so a goal survives
+// State is persisted to ~/.asimov/goals.sqlite so a goal survives
 // process restarts and is queryable by session_id.
 //
 // Design mirrors Codex thread_goals (codex-rs/state/src/runtime/goals.rs).
@@ -161,9 +161,9 @@ impl GoalStore {
         Ok(Self { conn })
     }
 
-    /// Default path: `~/.claurst/goals.sqlite`.
+    /// Default path: `~/.asimov/goals.sqlite`.
     pub fn default_path() -> Option<PathBuf> {
-        dirs::home_dir().map(|h| h.join(".claurst").join("goals.sqlite"))
+        dirs::home_dir().map(|h| h.join(".asimov").join("goals.sqlite"))
     }
 
     /// Open using the default path (best-effort; returns None on failure).
@@ -315,9 +315,9 @@ impl GoalStore {
 // ---------------------------------------------------------------------------
 
 /// Returns true when the /goal feature is enabled.
-/// Disabled only if CLAURST_GOALS=0 is set explicitly.
+/// Disabled only if ASIMOV_GOALS=0 is set explicitly.
 pub fn goals_enabled() -> bool {
-    std::env::var("CLAURST_GOALS")
+    std::env::var("ASIMOV_GOALS")
         .map(|v| v != "0" && v.to_lowercase() != "false")
         .unwrap_or(true)
 }

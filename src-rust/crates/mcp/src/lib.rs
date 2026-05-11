@@ -14,9 +14,9 @@
 // - Connection manager with exponential-backoff reconnection
 
 use async_trait::async_trait;
-use claurst_core::config::McpServerConfig;
-use claurst_core::mcp_templates::TemplateRenderer;
-use claurst_core::types::ToolDefinition;
+use asimov_core::config::McpServerConfig;
+use asimov_core::mcp_templates::TemplateRenderer;
+use asimov_core::types::ToolDefinition;
 use dashmap::DashMap;
 use futures::stream::{BoxStream, StreamExt};
 use serde::{Deserialize, Serialize};

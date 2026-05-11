@@ -4,8 +4,8 @@
 // `ProviderError` so that the application-layer code can handle errors
 // generically without knowing which provider was involved.
 
-use claurst_core::error::ClaudeError;
-use claurst_core::provider_id::ProviderId;
+use asimov_core::error::ClaudeError;
+use asimov_core::provider_id::ProviderId;
 use std::fmt;
 
 // ---------------------------------------------------------------------------
